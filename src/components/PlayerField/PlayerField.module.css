@@ -1,0 +1,23 @@
+.player_field {
+  border-collapse: collapse;
+}
+
+.player_field__cell {
+  position: relative;
+  box-sizing: border-box;
+  height: 20px;
+  width: 20px;
+}
+
+.player_field,
+.player_field__cell {
+  border: 1px solid grey;
+}
+
+.fragment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+}

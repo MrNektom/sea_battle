@@ -1,0 +1,62 @@
+.ship {
+  display: flex;
+}
+.sf_mh,
+.sf_mv,
+.sf_ptb,
+.sf_ptr,
+.sf_sfl,
+.sf_sft {
+  box-sizing: border-box;
+}
+.sf_mv {
+  height: 20px;
+  width: 20px;
+  border-left: 1px solid grey;
+  border-right: 1px solid grey;
+  background-color: #555;
+}
+
+.sf_mh {
+  height: 20px;
+  width: 20px;
+  border-top: 1px solid grey;
+  border-bottom: 1px solid grey;
+  background-color: #555;
+}
+
+.sf_sfl {
+  width: 20px;
+  height: 20px;
+  border: 1px solid grey;
+  border-right: none;
+  border-radius: 5px 0 0 5px;
+  background-color: #555;
+}
+
+.sf_sft {
+  width: 20px;
+  height: 20px;
+  border: 1px solid grey;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  background-color: #555;
+}
+
+.sf_ptr {
+  height: 20px;
+  width: 20px;
+  box-sizing: border-box;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 12px solid grey;
+}
+
+.sf_ptb {
+  height: 20px;
+  width: 20px;
+  box-sizing: border-box;
+  border-top: 12px solid grey;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+}
