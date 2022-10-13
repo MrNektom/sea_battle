@@ -1,26 +1,19 @@
 import { expect, test } from "vitest";
+import { IShip, IFieldRect } from "../src/store/types";
 import {
-  IShip,
-  EShipKind,
-  EShipOrientation,
-  IPlayField,
-  IFieldRect,
-} from "../src/store/types";
-import {
-  detectCollisions,
-  getBodyZone,
+  asCoordArray,
   getCollisionZone,
   hasCollisions,
   isMiddle,
+  isOutOfField,
   isProw,
   isStern,
 } from "../src/store/ship";
-import { playerFieldInit } from "../src/store/playerFieldInit";
 
 test("ship matches horisontal", () => {
   const ship: IShip = {
-    kind: EShipKind.Cruiser,
-    orientation: EShipOrientation.Horisontal,
+    kind: "cruiser",
+    orientation: "horisontal",
     x: 3,
     y: 1,
   };
@@ -50,8 +43,8 @@ test("ship matches horisontal", () => {
 
 test("ship matches vertical", () => {
   const ship: IShip = {
-    kind: EShipKind.Cruiser,
-    orientation: EShipOrientation.Vertical,
+    kind: "cruiser",
+    orientation: "vertical",
     x: 3,
     y: 3,
   };
@@ -79,122 +72,24 @@ test("ship matches vertical", () => {
   expect(isMiddle(ship, 0, 0)).toBe(false);
 });
 
-test("ship body zone", () => {
-  expect(
-    getBodyZone({
-      kind: EShipKind.Cruiser,
-      orientation: EShipOrientation.Horisontal,
-      x: 4,
-      y: 2,
-    })
-  ).toEqual({
-    x: 1,
-    y: 2,
-    w: 3,
-    h: 1,
-  });
-
-  expect(
-    getBodyZone({
-      kind: EShipKind.Cruiser,
-      orientation: EShipOrientation.Vertical,
-      x: 2,
-      y: 4,
-    })
-  ).toEqual({
-    x: 2,
-    y: 1,
-    w: 1,
-    h: 3,
-  });
-});
-
-test("rect collisions", () => {
-  expect(
-    detectCollisions(
-      {
-        x: 1,
-        y: 1,
-        w: 2,
-        h: 2,
-      },
-      {
-        x: 2,
-        y: 2,
-        w: 3,
-        h: 3,
-      }
-    )
-  ).toBe(true);
-
-  expect(
-    detectCollisions(
-      {
-        x: 2,
-        y: 2,
-        w: 2,
-        h: 2,
-      },
-      {
-        x: 1,
-        y: 1,
-        w: 2,
-        h: 2,
-      }
-    )
-  ).toBe(true);
-  expect(
-    detectCollisions(
-      {
-        x: 1,
-        y: 1,
-        w: 2,
-        h: 2,
-      },
-      {
-        x: 1,
-        y: 3,
-        w: 2,
-        h: 2,
-      }
-    )
-  ).toBe(true);
-  expect(
-    detectCollisions(
-      {
-        x: 1,
-        y: 1,
-        w: 2,
-        h: 2,
-      },
-      {
-        x: 2,
-        y: 2,
-        w: 3,
-        h: 3,
-      }
-    )
-  ).toBe(true);
-});
-
 test("ship collisions", () => {
   const list: IShip[] = [
     {
-      kind: EShipKind.Cruiser,
-      orientation: EShipOrientation.Horisontal,
+      kind: "cruiser",
+      orientation: "horisontal",
       x: 6,
       y: 1,
     },
   ];
   const ship: IShip = {
-    kind: EShipKind.Cruiser,
-    orientation: EShipOrientation.Vertical,
+    kind: "cruiser",
+    orientation: "vertical",
     x: 5,
     y: 3,
   };
   const ship2: IShip = {
-    kind: EShipKind.Cruiser,
-    orientation: EShipOrientation.Vertical,
+    kind: "cruiser",
+    orientation: "vertical",
     x: 5,
     y: 5,
   };
@@ -204,15 +99,15 @@ test("ship collisions", () => {
 
 test("ship rect", () => {
   const ship1: IShip = {
-    kind: EShipKind.Cruiser,
-    orientation: EShipOrientation.Horisontal,
+    kind: "cruiser",
+    orientation: "horisontal",
     x: 6,
     y: 1,
   };
 
   const ship2: IShip = {
-    kind: EShipKind.Cruiser,
-    orientation: EShipOrientation.Vertical,
+    kind: "cruiser",
+    orientation: "vertical",
     x: 5,
     y: 3,
   };
@@ -230,4 +125,55 @@ test("ship rect", () => {
     w: 3,
     h: 5,
   });
+});
+
+test("isOutOfField", () => {
+  const ship1: IShip = {
+    kind: "cruiser",
+    orientation: "horisontal",
+    x: 6,
+    y: 4,
+  };
+  const ship2: IShip = {
+    kind: "cruiser",
+    orientation: "horisontal",
+    x: 2,
+    y: 0,
+  };
+  const ship3: IShip = {
+    kind: "cruiser",
+    orientation: "vertical",
+    x: 3,
+    y: 1,
+  };
+  const ship4: IShip = {
+    kind: "cruiser",
+    orientation: "vertical",
+    x: 3,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    y: 8,
+  };
+  expect(isOutOfField(ship1)).toBe(false);
+  expect(isOutOfField(ship2)).toBe(false);
+  expect(isOutOfField(ship3)).toBe(true);
+  expect(isOutOfField(ship4)).toBe(true);
+});
+
+test("as coord array", () => {
+  const rect: IFieldRect = {
+    x: 2,
+    y: 3,
+    w: 3,
+    h: 2,
+  };
+
+  expect(asCoordArray(rect)).toEqual([
+    [2, 3],
+    [3, 3],
+    [4, 3],
+    [2, 4],
+    [3, 4],
+    [4, 4],
+  ]);
 });

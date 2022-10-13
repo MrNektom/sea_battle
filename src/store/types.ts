@@ -1,7 +1,7 @@
 export interface IGameState {
   player1: IPlayer;
   player2: IPlayer;
-  phase: EGamePhase;
+  phase: TGamePhase;
 }
 
 export interface IPlayer {
@@ -9,55 +9,41 @@ export interface IPlayer {
 }
 
 export interface IPlayField {
-  cells: EFieldCell[][];
+  cells: TFieldCell[][];
   ships: IShip[];
 }
 
-export enum EFieldCell {
-  none = "",
-  past = "・",
-  hit = "\u{00d7}",
-}
+export type TFieldCell = " " | "・" | "\u{00d7}";
 
-export enum EGamePhase {
-  waitForStart,
-  initPlayer1Field,
-  waitForPlayer2,
-  initPlayer2Field,
-  waitForPlayer1Step,
-  waitForPlayer2Step,
-  showSessionResults,
-}
+export type TGamePhase =
+  | "waitForStart"
+  | "initPlayer1Field"
+  | "initPlayer2Field"
+  | "waitForPlayer1Step"
+  | "waitForPlayer2Step"
+  | "showSessionResults";
 
-export enum EShipOrientation {
-  Vertical,
-  Horisontal,
-}
+export type TShipOrientation = "vertical" | "horisontal";
 
-export enum EShipKind {
-  Sloop = 0,
-  Cruiser = 1,
-  Battleship = 2,
-}
+export type TShipKind = "sloop" | "cruiser" | "battleship";
 
 export type TShipAxisCoord = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface IShip {
-  orientation: EShipOrientation;
-  kind: EShipKind;
+  orientation: TShipOrientation;
+  kind: TShipKind;
   x: TShipAxisCoord;
   y: TShipAxisCoord;
 }
 
-export enum EShipFragment {
-  middleVertical = "middleV",
-  middleHorisontal = "middleH",
-  prowToR = "prowR",
-  prowToB = "prowB",
-  sternFromT = "sternT",
-  sternFromL = "sternL",
-  none = "none",
-}
+export type TShipFragment =
+  | "middleV"
+  | "middleH"
+  | "prowR"
+  | "prowB"
+  | "sternT"
+  | "sternL"
+  | "none";
 
 export interface IFieldRect {
   x: number;

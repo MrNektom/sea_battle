@@ -1,0 +1,22 @@
+.step_indicator {
+  display: flex;
+  place-items: center;
+  padding: 0 10px;
+}
+
+.step_indicator__indicator {
+  box-sizing: border-box;
+  margin: auto;
+  width: 30px;
+  height: 50px;
+}
+.step_indicator__indicator.right {
+  border-left: 30px solid grey;
+  border-bottom: 25px solid transparent;
+  border-top: 25px solid transparent;
+}
+.step_indicator__indicator.left {
+  border-right: 30px solid grey;
+  border-bottom: 25px solid transparent;
+  border-top: 25px solid transparent;
+}

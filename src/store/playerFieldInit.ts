@@ -1,7 +1,7 @@
-import { EFieldCell } from "./types";
+import { TFieldCell } from "./types";
 
-export function playerFieldInit() {
-  return arr8().map(() => arr8().map(() => EFieldCell.none));
+export function playerFieldInit(): TFieldCell[][] {
+  return arr8().map(() => arr8().map(() => " "));
 }
 
 function arr8() {

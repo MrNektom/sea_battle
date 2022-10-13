@@ -1,61 +1,58 @@
 import { match } from "ts-pattern";
 import {
-  EShipFragment,
-  EShipKind,
-  EShipOrientation,
   IFieldRect,
   IPlayField,
   IShip,
   TShipAxisCoord,
+  TShipFragment,
+  TShipKind,
+  TShipOrientation,
 } from "./types";
-import { rangeFT } from "./utils";
+import { range } from "./utils";
 
 export function getFragKind(
-  field: IPlayField,
+  ships: IShip[],
   x: TShipAxisCoord,
   y: TShipAxisCoord
-): EShipFragment | null {
-  return match<IShip | null, EShipFragment | null>(findShip(field, x, y))
+): TShipFragment | null {
+  return match<IShip | null, TShipFragment>(findShip(ships, x, y))
     .with(
       {},
       (ship) => isProw(ship, x, y),
       (ship) =>
-        match(ship.orientation)
-          .with(EShipOrientation.Horisontal, () => EShipFragment.prowToR)
-          .with(EShipOrientation.Vertical, () => EShipFragment.prowToB)
-          .otherwise(() => EShipFragment.none)
+        match<TShipOrientation, TShipFragment>(ship.orientation)
+          .with("horisontal", () => "prowR")
+          .with("vertical", () => "prowB")
+          .otherwise(() => "none")
     )
     .with(
       {},
       (ship) => isMiddle(ship, x, y),
       (ship) =>
-        match(ship.orientation)
-          .with(
-            EShipOrientation.Horisontal,
-            () => EShipFragment.middleHorisontal
-          )
-          .with(EShipOrientation.Vertical, () => EShipFragment.middleVertical)
-          .otherwise(() => EShipFragment.none)
+        match<TShipOrientation, TShipFragment>(ship.orientation)
+          .with("horisontal", () => "middleH")
+          .with("vertical", () => "middleV")
+          .otherwise(() => "none")
     )
     .with(
       {},
       (ship) => isStern(ship, x, y),
       (ship) =>
-        match(ship.orientation)
-          .with(EShipOrientation.Horisontal, () => EShipFragment.sternFromL)
-          .with(EShipOrientation.Vertical, () => EShipFragment.sternFromT)
-          .otherwise(() => EShipFragment.none)
+        match<TShipOrientation, TShipFragment>(ship.orientation)
+          .with("horisontal", () => "sternL")
+          .with("vertical", () => "sternT")
+          .exhaustive()
     )
-    .otherwise(() => null);
+    .otherwise(() => "none");
 }
 
-function findShip(
-  field: IPlayField,
+export function findShip(
+  ships: IShip[],
   x: TShipAxisCoord,
   y: TShipAxisCoord
 ): IShip | null {
-  for (let i = 0; i < field.ships.length; i++) {
-    const ship = field.ships[i];
+  for (let i = 0; i < ships.length; i++) {
+    const ship = ships[i];
     if (hasShipOnCoords(ship, x, y)) {
       return ship;
     }
@@ -64,10 +61,10 @@ function findShip(
 }
 
 function getShipLength(ship: IShip): number {
-  return match<EShipKind, number>(ship.kind)
-    .with(EShipKind.Sloop, () => 2)
-    .with(EShipKind.Cruiser, () => 3)
-    .with(EShipKind.Battleship, () => 4)
+  return match<TShipKind, number>(ship.kind)
+    .with("sloop", () => 2)
+    .with("cruiser", () => 3)
+    .with("battleship", () => 4)
     .otherwise(() => 0);
 }
 
@@ -98,11 +95,11 @@ export function isMiddle(
 
   return match(ship)
     .with(
-      { orientation: EShipOrientation.Horisontal, y },
+      { orientation: "horisontal", y },
       () => ship.x > x && ship.x - (length - 1) < x
     )
     .with(
-      { orientation: EShipOrientation.Vertical, x },
+      { orientation: "vertical", x },
       () => ship.y > y && ship.y - (length - 1) < y
     )
     .otherwise(() => false);
@@ -115,23 +112,24 @@ export function isStern(
 ): boolean {
   const length = getShipLength(ship);
   return match(ship)
-    .with(
-      { orientation: EShipOrientation.Horisontal, y },
-      () => ship.x - (length - 1) === x
-    )
-    .with(
-      { orientation: EShipOrientation.Vertical, x },
-      () => ship.y - (length - 1) === y
-    )
+    .with({ orientation: "horisontal", y }, () => ship.x - (length - 1) === x)
+    .with({ orientation: "vertical", x }, () => ship.y - (length - 1) === y)
     .otherwise(() => false);
 }
 
-export function generateShips(): IShip[] {
+/**
+ * Generates ship list for new shipfield.
+ */
+export function genShips(): IShip[] {
   let ship: IShip | null = null;
   const list: IShip[] = [];
   while (hasAdd(list)) {
     ship = genShip();
-    if (hasCollisions(list, ship)) {
+    if (
+      isOutOfField(ship) ||
+      hasCollisions(list, ship) ||
+      hasKind(list, ship)
+    ) {
       continue;
     }
     list.push(ship);
@@ -143,12 +141,18 @@ function genAxisCoord(): TShipAxisCoord {
   return Math.round(Math.random() * 8) as TShipAxisCoord;
 }
 
-function genOrientation(): EShipOrientation {
-  return Math.round(Math.random());
+function genOrientation(): TShipOrientation {
+  return match<number, TShipOrientation>(Math.round(Math.random()))
+    .with(0, () => "horisontal")
+    .otherwise(() => "vertical");
 }
 
-function genShipKind(): EShipKind {
-  return Math.round(Math.random() * 2);
+function genShipKind(): TShipKind {
+  return match<0 | 1 | 2, TShipKind>(Math.round(Math.random() * 2) as 0 | 1 | 2)
+    .with(0, () => "sloop")
+    .with(1, () => "cruiser")
+    .with(2, () => "battleship")
+    .exhaustive();
 }
 
 function genShip(): IShip {
@@ -166,13 +170,13 @@ function hasAdd(list: IShip[]): boolean {
   let battleship = 0;
 
   list.forEach((ship) => {
-    if (ship.kind === EShipKind.Sloop) {
+    if (ship.kind === "sloop") {
       sloop++;
     }
-    if (ship.kind === EShipKind.Cruiser) {
+    if (ship.kind === "cruiser") {
       cruiser++;
     }
-    if (ship.kind === EShipKind.Battleship) {
+    if (ship.kind === "battleship") {
       battleship++;
     }
   });
@@ -185,11 +189,11 @@ function hasAdd(list: IShip[]): boolean {
 export function getCollisionZone(ship: IShip): IFieldRect {
   const length = getShipLength(ship);
   const x1 = match(ship.orientation)
-    .with(EShipOrientation.Horisontal, () => ship.x - length)
+    .with("horisontal", () => ship.x - length)
     .otherwise(() => ship.x - 1);
   const x2 = ship.x + 1;
   const y1 = match(ship.orientation)
-    .with(EShipOrientation.Horisontal, () => ship.y - 1)
+    .with("horisontal", () => ship.y - 1)
     .otherwise(() => ship.y - length);
   const y2 = ship.y + 1;
   return {
@@ -200,69 +204,92 @@ export function getCollisionZone(ship: IShip): IFieldRect {
   };
 }
 
-export function getBodyZone(ship: IShip): IFieldRect {
-  const length = getShipLength(ship);
-  return match<EShipOrientation, IFieldRect>(ship.orientation)
-    .with(EShipOrientation.Horisontal, () => ({
-      x: ship.x - length,
-      y: ship.y,
-      w: length,
-      h: 1,
-    }))
-    .with(EShipOrientation.Vertical, () => ({
-      x: ship.x,
-      y: ship.y - length,
-      w: 1,
-      h: length,
-    }))
+export function isOutOfField(ship: IShip): boolean {
+  const length = getShipLength(ship) - 1;
+
+  return match(ship.orientation)
+    .with(
+      "horisontal",
+      () => ship.x - length < 0 || ship.x > 7 || ship.y < 0 || ship.y > 7
+    )
+    .with(
+      "vertical",
+      () => ship.x < 0 || ship.x > 7 || ship.y - length < 0 || ship.y > 7
+    )
+    .exhaustive();
+}
+
+function hasKind(list: IShip[], ship: IShip): boolean {
+  let count = 0;
+  for (let i = 0; i < list.length; i++) {
+    const lship = list[i];
+    if (lship.kind === ship.kind) {
+      count++;
+    }
+  }
+  return match(ship.kind)
+    .with("battleship", () => count >= 1)
+    .with("cruiser", () => count >= 2)
+    .with("sloop", () => count >= 3)
     .otherwise(() => {
-      throw new Error("Unexpected branch");
+      throw new Error("Invalid ship kind");
     });
 }
 
-function hasPointInRect(rect: IFieldRect, x: number, y: number): boolean {
-  return (
-    rect.x <= x && rect.x + rect.w >= y && rect.y <= y && rect.y + rect.h >= y
-  );
-}
+export function asCoordArray(
+  rect: IFieldRect
+): [TShipAxisCoord, TShipAxisCoord][] {
+  const coords: [TShipAxisCoord, TShipAxisCoord][] = [];
 
-export function detectCollisions(
-  rect1: IFieldRect,
-  rect2: IFieldRect
-): boolean {
-  return (
-    hasPointInRect(rect1, rect2.x, rect2.y) ||
-    hasPointInRect(rect1, rect2.x, rect2.y + rect2.h) ||
-    hasPointInRect(rect1, rect2.x + rect2.w, rect2.y + rect2.h) ||
-    hasPointInRect(rect1, rect2.x + rect2.w, rect2.y)
-  );
-}
+  for (let y = rect.y; y < rect.y + rect.h; y++) {
+    for (let x = rect.x; x < rect.x + rect.w; x++) {
+      coords.push([x as TShipAxisCoord, y as TShipAxisCoord]);
+    }
+  }
 
-function isOutOfField(ship: IShip): boolean {
-  const body = getBodyZone(ship);
-  const fieldRect: IFieldRect = {
-    x: 0,
-    y: 0,
-    w: 8,
-    h: 8,
-  };
-
-  return (
-    !hasPointInRect(fieldRect, body.x, body.y) &&
-    !hasPointInRect(fieldRect, body.x + body.w - 1, body.y + body.h - 1)
-  );
+  return coords;
 }
 
 export function hasCollisions(list: IShip[], ship: IShip): boolean {
-  const newCollisionZone = getCollisionZone(ship);
-  for (let i = 0; i < list.length; i++) {
-    const collisionZone = getBodyZone(list[i]);
-    if (
-      isOutOfField(ship) ||
-      detectCollisions(newCollisionZone, collisionZone)
-    ) {
+  const collisionZone = getCollisionZone(ship);
+  const coords = asCoordArray(collisionZone);
+  for (let i = 0; i < coords.length; i++) {
+    const coord = coords[i];
+    if (getFragKind(list, ...coord) !== "none") {
       return true;
     }
   }
   return false;
+}
+
+export function isDestroyed(field: IPlayField, index: number): boolean {
+  const body = getBody(field.ships[index]);
+  for (let i = 0; i < body.length; i++) {
+    const [x, y] = body[i];
+    if (field.cells[y][x] !== "×") {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getBody(ship: IShip): [TShipAxisCoord, TShipAxisCoord][] {
+  const length = getShipLength(ship) - 1;
+
+  return match<TShipOrientation, [TShipAxisCoord, TShipAxisCoord][]>(
+    ship.orientation
+  )
+    .with("horisontal", () =>
+      range(length).map((i) => [
+        (ship.x - length + i) as TShipAxisCoord,
+        ship.y,
+      ])
+    )
+    .with("vertical", () =>
+      range(length).map((i) => [
+        ship.x,
+        (ship.y - length + i) as TShipAxisCoord,
+      ])
+    )
+    .exhaustive();
 }
