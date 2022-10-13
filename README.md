@@ -21,3 +21,5 @@ or
 ```shell
 yarn dev
 ```
+
+and see http://localhost:5173
