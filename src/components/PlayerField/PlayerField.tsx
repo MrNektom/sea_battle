@@ -32,7 +32,6 @@ export function PlayerField({
                   onClick(x as TShipAxisCoord, y as TShipAxisCoord)
                 }
               >
-                {cell}
                 <div className={s.fragment}>
                   {showShips && (
                     <ShipFragment
@@ -44,6 +43,7 @@ export function PlayerField({
                     />
                   )}
                 </div>
+                <div className={s.cell_shot}>{cell}</div>
               </td>
             ))}
           </tr>

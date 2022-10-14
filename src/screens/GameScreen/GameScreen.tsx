@@ -11,12 +11,6 @@ export function GameScreen() {
   const nextStepEvent = useEvent(nextStep);
 
   function handleShot(x: TShipAxisCoord, y: TShipAxisCoord) {
-    console.log(
-      game.phase === "waitForPlayer1Step"
-        ? game.player2.field.cells[y][x]
-        : game.player1.field.cells[y][x]
-    );
-
     if (
       (game.phase === "waitForPlayer1Step" &&
         game.player2.field.cells[y][x] === " ") ||
@@ -27,22 +21,25 @@ export function GameScreen() {
     }
   }
   return (
-    <div className={s.game_screen}>
-      <PlayerField
-        field={game.player1.field}
-        showShips={false}
-        disabled={game.phase === "waitForPlayer1Step"}
-        onClick={handleShot}
-      />
-      <StepIndicator
-        dir={game.phase === "waitForPlayer1Step" ? "right" : "left"}
-      />
-      <PlayerField
-        field={game.player2.field}
-        showShips={false}
-        disabled={game.phase === "waitForPlayer2Step"}
-        onClick={handleShot}
-      />
+    <div>
+      <h1>Sea battle</h1>
+      <div className={s.game_screen}>
+        <PlayerField
+          field={game.player1.field}
+          showShips={false}
+          disabled={game.phase === "waitForPlayer1Step"}
+          onClick={handleShot}
+        />
+        <StepIndicator
+          dir={game.phase === "waitForPlayer1Step" ? "right" : "left"}
+        />
+        <PlayerField
+          field={game.player2.field}
+          showShips={false}
+          disabled={game.phase === "waitForPlayer2Step"}
+          onClick={handleShot}
+        />
+      </div>
     </div>
   );
 }

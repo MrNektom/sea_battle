@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { IPlayField, IShip } from "../../store/types";
-import { PlayerField } from "./PlayerField";
-import { genShips } from "../../store/ship";
+import React from "react";
+import { IPlayField } from "../../store/types";
 import s from "./EditablePlayerField.module.css";
+import { PlayerField } from "../PlayerField/PlayerField";
 
 interface IEditablePlayerFieldProps {
   field: IPlayField;

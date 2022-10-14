@@ -1,7 +1,6 @@
 import { useEvent, useStore } from "effector-react";
-import React, { useRef, useState } from "react";
-import { match } from "ts-pattern";
-import { EditablePlayerField } from "../../components/PlayerField/EditablePlayerField";
+import React, { useState } from "react";
+import { EditablePlayerField } from "../../components/EditablePlayerField/EditablePlayerField";
 import { playerFieldInit } from "../../store/playerFieldInit";
 import { genShips } from "../../store/ship";
 import { $game, initPlayer1Field, initPlayer2Field } from "../../store/store";
