@@ -1,3 +1,5 @@
+import { Field } from "./field";
+
 export interface IGameState {
   player1: IPlayer;
   player2: IPlayer;
@@ -5,7 +7,7 @@ export interface IGameState {
 }
 
 export interface IPlayer {
-  field: IPlayField;
+  field: Field;
 }
 
 export interface IPlayField {

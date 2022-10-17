@@ -1,27 +1,20 @@
 import { createEvent, createStore } from "effector";
 import { match } from "ts-pattern";
-import { isAllDestroyed, shotField } from "./field";
-import { playerFieldInit } from "./playerFieldInit";
-import { IGameState, IPlayField, TGamePhase, TShipAxisCoord } from "./types";
+import { Field } from "./field";
+import { IGameState, TGamePhase, TShipAxisCoord } from "./types";
 
 export const startGame = createEvent();
-export const initPlayer1Field = createEvent<IPlayField>();
-export const initPlayer2Field = createEvent<IPlayField>();
+export const initPlayer1Field = createEvent<Field>();
+export const initPlayer2Field = createEvent<Field>();
 
 export const nextStep = createEvent<[TShipAxisCoord, TShipAxisCoord]>();
 
 export const $game = createStore<IGameState>({
   player1: {
-    field: {
-      cells: playerFieldInit(),
-      ships: [],
-    },
+    field: new Field(),
   },
   player2: {
-    field: {
-      cells: playerFieldInit(),
-      ships: [],
-    },
+    field: new Field(),
   },
   phase: "waitForStart",
 });
@@ -55,33 +48,26 @@ $game.on(initPlayer2Field, (state, field) => ({
 $game.on(nextStep, (state, [x, y]) =>
   match<TGamePhase, IGameState>(state.phase)
     .with("waitForPlayer1Step", () => {
-      const [field, result] = shotField(state.player2.field, x, y);
+      const [result] = state.player2.field.shot(x, y);
+
       return {
         ...state,
-        phase: isAllDestroyed(field)
+        phase: state.player2.field.isAllDestroyed()
           ? "showSessionResults"
           : result
           ? "waitForPlayer1Step"
           : "waitForPlayer2Step",
-        player2: {
-          ...state.player2,
-          field,
-        },
       };
     })
     .with("waitForPlayer2Step", () => {
-      const [field, result] = shotField(state.player1.field, x, y);
+      const [result] = state.player1.field.shot(x, y);
       return {
         ...state,
-        phase: isAllDestroyed(field)
+        phase: state.player1.field.isAllDestroyed()
           ? "showSessionResults"
           : result
           ? "waitForPlayer2Step"
           : "waitForPlayer1Step",
-        player1: {
-          ...state.player1,
-          field,
-        },
       };
     })
     .otherwise(() => {

@@ -13,9 +13,9 @@ export function GameScreen() {
   function handleShot(x: TShipAxisCoord, y: TShipAxisCoord) {
     if (
       (game.phase === "waitForPlayer1Step" &&
-        game.player2.field.cells[y][x] === " ") ||
+        game.player2.field.getShot(x, y) === " ") ||
       (game.phase === "waitForPlayer2Step" &&
-        game.player1.field.cells[y][x] === " ")
+        game.player1.field.getShot(x, y) === " ")
     ) {
       nextStepEvent([x, y]);
     }

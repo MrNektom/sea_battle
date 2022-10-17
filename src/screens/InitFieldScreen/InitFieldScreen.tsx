@@ -1,30 +1,26 @@
 import { useEvent, useStore } from "effector-react";
-import React, { useState } from "react";
-import { EditablePlayerField } from "../../components/EditablePlayerField/EditablePlayerField";
-import { playerFieldInit } from "../../store/playerFieldInit";
+import React, { useEffect, useState } from "react";
+import { PlayerField } from "../../components/PlayerField/PlayerField";
 import { genShips } from "../../store/ship";
 import { $game, initPlayer1Field, initPlayer2Field } from "../../store/store";
-import { IPlayField } from "../../store/types";
+import { IShip } from "../../store/types";
 
 export function InitFieldScreen() {
   const game = useStore($game);
   const initPlayer1 = useEvent(initPlayer1Field);
   const initPlayer2 = useEvent(initPlayer2Field);
-  const [field, setField] = useState<IPlayField>(() => ({
-    cells: playerFieldInit(),
-    ships: genShips(),
-  }));
+  const [ships, setShips] = useState<IShip[]>(() => genShips());
+  const field =
+    game.phase === "initPlayer1Field" ? game.player1.field : game.player2.field;
 
   function onConfirm() {
-    if (field.ships.length === 0) {
+    if (ships.length === 0) {
       return;
     }
     if (game.phase === "initPlayer1Field") {
-      setField({
-        cells: playerFieldInit(),
-        ships: genShips(),
-      });
+      setShips(genShips());
     }
+    field.ships = ships;
     game.phase === "initPlayer1Field"
       ? initPlayer1(field)
       : game.phase === "initPlayer2Field"
@@ -33,18 +29,22 @@ export function InitFieldScreen() {
           throw new Error("invalid game state");
         })();
   }
-
+  useEffect(() => {
+    field.ships = ships;
+  }, [ships]);
   return (
     <div>
       <h2>
         Please select positions of{" "}
         {game.phase === "initPlayer1Field" ? "P1" : "P2"} ships
       </h2>
-      <EditablePlayerField
-        field={field}
-        onChange={() => setField({ cells: field.cells, ships: genShips() })}
-      />
-      <button onClick={onConfirm}>Submit</button>
+      <div style={{ display: "inline-block" }}>
+        <PlayerField field={field} ships={ships} />
+      </div>
+      <div style={{ paddingTop: "20px" }}>
+        <button onClick={() => setShips(genShips())}>Shuffle</button>
+        <button onClick={onConfirm}>Submit</button>
+      </div>
     </div>
   );
 }

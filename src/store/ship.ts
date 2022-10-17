@@ -59,6 +59,19 @@ export function findShip(
   }
   return null;
 }
+export function findShipIndex(
+  ships: IShip[],
+  x: TShipAxisCoord,
+  y: TShipAxisCoord
+): number {
+  for (let i = 0; i < ships.length; i++) {
+    const ship = ships[i];
+    if (hasShipOnCoords(ship, x, y)) {
+      return i;
+    }
+  }
+  return -1;
+}
 
 function getShipLength(ship: IShip): number {
   return match<TShipKind, number>(ship.kind)
@@ -273,23 +286,42 @@ export function isDestroyed(field: IPlayField, index: number): boolean {
   return true;
 }
 
-function getBody(ship: IShip): [TShipAxisCoord, TShipAxisCoord][] {
-  const length = getShipLength(ship) - 1;
+export function getBody(ship: IShip): [TShipAxisCoord, TShipAxisCoord][] {
+  const length = getShipLength(ship);
 
   return match<TShipOrientation, [TShipAxisCoord, TShipAxisCoord][]>(
     ship.orientation
   )
     .with("horisontal", () =>
       range(length).map((i) => [
-        (ship.x - length + i) as TShipAxisCoord,
+        (ship.x - length + i + 1) as TShipAxisCoord,
         ship.y,
       ])
     )
     .with("vertical", () =>
       range(length).map((i) => [
         ship.x,
-        (ship.y - length + i) as TShipAxisCoord,
+        (ship.y - length + i + 1) as TShipAxisCoord,
       ])
+    )
+    .exhaustive();
+}
+
+export function getAroundZone(ship: IShip): [TShipAxisCoord, TShipAxisCoord][] {
+  const length = getShipLength(ship) - 1;
+  const collisionZone = asCoordArray(getCollisionZone(ship));
+  return match<TShipOrientation, [TShipAxisCoord, TShipAxisCoord][]>(
+    ship.orientation
+  )
+    .with("horisontal", () =>
+      collisionZone.filter(
+        ([x, y]) => !(x <= ship.x && x >= ship.x - length && y === ship.y)
+      )
+    )
+    .with("vertical", () =>
+      collisionZone.filter(
+        ([x, y]) => !(y <= ship.y && y >= ship.y - length && x === ship.x)
+      )
     )
     .exhaustive();
 }

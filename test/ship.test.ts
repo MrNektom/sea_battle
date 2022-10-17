@@ -1,7 +1,9 @@
 import { expect, test } from "vitest";
-import { IShip, IFieldRect } from "../src/store/types";
+import { IShip, IFieldRect, TShipAxisCoord } from "../src/store/types";
 import {
   asCoordArray,
+  getAroundZone,
+  getBody,
   getCollisionZone,
   hasCollisions,
   isMiddle,
@@ -175,5 +177,79 @@ test("as coord array", () => {
     [2, 4],
     [3, 4],
     [4, 4],
+  ]);
+});
+
+test("get body", () => {
+  expect<[TShipAxisCoord, TShipAxisCoord][]>(
+    getBody({
+      kind: "cruiser",
+      orientation: "horisontal",
+      x: 3,
+      y: 0,
+    })
+  ).toEqual([
+    [1, 0],
+    [2, 0],
+    [3, 0],
+  ]);
+
+  expect<[TShipAxisCoord, TShipAxisCoord][]>(
+    getBody({
+      kind: "cruiser",
+      orientation: "vertical",
+      x: 0,
+      y: 3,
+    })
+  ).toEqual([
+    [0, 1],
+    [0, 2],
+    [0, 3],
+  ]);
+});
+
+test("ship around zone", () => {
+  expect(
+    getAroundZone({
+      kind: "cruiser",
+      orientation: "horisontal",
+      x: 3,
+      y: 1,
+    })
+  ).toEqual([
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [3, 0],
+    [4, 0],
+    [0, 1],
+    [4, 1],
+    [0, 2],
+    [1, 2],
+    [2, 2],
+    [3, 2],
+    [4, 2],
+  ]);
+
+  expect(
+    getAroundZone({
+      kind: "cruiser",
+      orientation: "vertical",
+      x: 1,
+      y: 3,
+    })
+  ).toEqual([
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [0, 1],
+    [2, 1],
+    [0, 2],
+    [2, 2],
+    [0, 3],
+    [2, 3],
+    [0, 4],
+    [1, 4],
+    [2, 4],
   ]);
 });
